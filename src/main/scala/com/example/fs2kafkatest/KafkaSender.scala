@@ -1,8 +1,7 @@
 package com.example.fs2kafkatest
 
-import cats.effect._
-import cats.implicits._
 import cats._
+import cats.implicits._
 import fs2.kafka._
 
 trait KafkaSender[F[_]] {
@@ -10,25 +9,17 @@ trait KafkaSender[F[_]] {
 }
 
 object KafkaSender {
-  def impl[F[_]: ConcurrentEffect: ContextShift: FlatMap] = {
-    val producerSettings =
-      ProducerSettings[F, String, String]
-        .withBootstrapServers("localhost:9092")
-
-    val resource = producerResource[F].using(producerSettings)
+  def impl[F[_]: FlatMap](producer: KafkaProducer[F, String, String]) = {
 
     new KafkaSender[F] {
       override def send(event: String) =
-        resource
-          .use(producer =>
-            producer
-              .produce(
-                ProducerRecords.one(
-                  ProducerRecord("jokes", "test-key", event)
-                )
-              )
-              .flatten
+        producer
+          .produce(
+            ProducerRecords.one(
+              ProducerRecord("hellos-2", "test-key", event)
+            )
           )
+          .flatten
     }
   }
 }
